@@ -1,0 +1,46 @@
+<table id="routelist" lay-filter="routelist"></table>
+<button class='layui-btn layui-btn-sm save'>保存</button>
+<script type="text/javascript">
+var ids=[];
+jQuery(document).ready(function($) {
+  	layui.use('table', function(){
+        table = layui.table, form = layui.form;
+        table.render({
+            elem: '#routelist'
+            ,url: '/api/route_list' //数据接口
+            ,page: false //开启分页
+            ,cols: [[ //表头
+                {type:'checkbox'}
+                ,{field: 'id', title: 'ID', width:100}
+                ,{field: 'name', title: '名称', width:120}
+                ,{field: 'url', title: 'URL', width:300} 
+            ]]
+        });
+        //监听复选框
+        table.on('checkbox(routelist)', function(obj){
+            var checkStatus = table.checkStatus('routelist');
+            data = checkStatus.data;
+            ids = [];
+            $.each(data,function(index, val) {
+                ids[index] = val.id;
+            });
+        });
+    });
+    $('.save').click(function () {
+        if (ids.length == 0) { layer.msg('请选择可以访问路由!'); return;}
+        var id = get_param('id');
+        var load1=layer.load(1, {time:1000*10});
+        $.post('/api/update_role_route', {ids:ids, id:id}, function(data, textStatus, xhr) {
+            layer.close(load1);
+            if (data.code == 0) {
+                layer.msg('保存成功!');
+                parent.reload_table();
+            }else{
+                layer.msg(data.msg);
+            }
+            
+        });
+    })
+});
+</script>
+

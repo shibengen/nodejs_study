@@ -1,0 +1,147 @@
+
+<div>
+  <a href='javascript:;' class="layui-btn layui-btn-normal add_route">添加路由</a>
+</div>
+<table id="routelist" lay-filter="routelist"></table>
+ 
+<script type="text/javascript">
+var table=null;//全局table变量
+jQuery(document).ready(function($) {
+  layui.use('table', function(){
+        table = layui.table, form = layui.form;
+        table.render({
+           elem: '#routelist'
+          ,width:800
+          ,height: 450
+          ,url: '/api/route_list' //数据接口
+          ,page: true //开启分页
+          ,cols: [[ //表头
+            {field: 'id', title: 'ID', width:80, sort: true, fixed: 'left'}
+            ,{field: 'name', title: '名称', width:120}
+            ,{field: 'url', title: 'URL', width:300} 
+            ,{field: 'wealth', title: '操作',toolbar:'#operation', width: 140}
+          ]]
+        });
+        //监听工具条
+      	table.on('tool(routelist)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'del'){
+			  layer.confirm('真的删除行么', function(index){
+			    var load=layer.load(1,{time:1000*20});
+			    $.ajax({
+			        url:'/api/route/'+data.id,
+			        type: 'delete',
+			        dataType: 'json',
+			        data: {},
+			        success: function(data, textStatus, xhr) {
+			            // console.log(result);
+			            layer.close(load);
+			            if (data.code == 0) {
+			              layer.msg('删除成功');
+			              obj.del();
+			            }else{
+			              layer.msg('删除失败');
+			            }
+			        },
+			        error: function(res, txt, err) {}
+			    });
+			    layer.close(index);
+			  });
+			} else if(obj.event === 'edit'){
+			  	var layer_area = ['400px', '210px'];
+			    var _div = "<table class='table_min' ><tr class='tr_min'><td align='right' >";
+			    _div+= "名称 : &nbsp;</td><td><input type='text' name='name'  class='name input' value='"+data.name+"'' ></td></tr>";
+			    _div += "<t class='tr_min'><td align='right'>";
+			    _div += "URL : &nbsp;</td><td> <input type='text' name='url'   class='url input' value='"+data.url+"'></td></tr></table>";
+			    layer.open({
+			        type: 1,
+			        title: '编辑路由',
+			        content: _div,
+			        area: layer_area,
+			        btn: ['确定', '取消'],
+			        yes: function(index, elem) {
+			            var name = $('.name').val();
+			            var url = $('.url').val();
+			            if (!name || !url  ) {
+			                layer.msg('请输入数据!');return ;
+			            }
+			            if (name.length<1) {
+			                layer.msg('名称最少1个字符!');
+			                return;
+			            }
+			            if (url.length<4) {
+			                layer.msg('URL最少4个字符!');
+			                return;
+			            }
+			            $.post('/api/update_route', { name: name, url: url, id: data.id }, function(data, textStatus, xhr) {
+			                if (data.code == 0) {
+			                    layer.msg('更新成功');
+			                   	obj.update({
+								    name: name
+								    ,url: url
+							    });
+								layer.close(index);
+			                } else {
+			                    layer.msg(data.msg);
+			                }
+			            });
+			            
+			        }
+			    });
+			}
+        });
+  });
+});
+//===============================event================================
+
+$('.add_route').click(function () {
+	var layer_area = ['400px', '210px'];
+    var _div = "<table class='table_min' ><tr class='tr_min'><td align='right' >";
+    _div+= "名称 : &nbsp;</td><td><input type='text' name='name'  class='name input' ></td></tr>";
+    _div += "<t class='tr_min'><td align='right'>";
+    _div += "URL : &nbsp;</td><td> <input type='text' name='url'   class='url input'></td></tr></table>";
+    layer.open({
+        type: 1,
+        title: '添加路由',
+        content: _div,
+        area: layer_area,
+        btn: ['确定', '取消'],
+        yes: function(index, elem) {
+            var name = $('.name').val();
+            var url = $('.url').val();
+            if (!name || !url  ) {
+                layer.msg('请输入数据!');return ;
+            }
+            if (name.length<1) {
+                layer.msg('名称最少1个字符!');
+                return;
+            }
+            if (url.length<4) {
+                layer.msg('URL最少4个字符!');
+                return;
+            }
+            $.post('/api/add_route', { name: name, url: url }, function(data, textStatus, xhr) {
+                if (data.code == 0) {
+                    layer.msg('添加成功');
+                    table.reload('routelist', {
+						  url: '/api/route_list'
+						  // ,where: {} //设定异步数据接口的额外参数
+						  //,height: 300
+						});
+					layer.close(index);
+                } else {
+                    layer.msg(data.msg);
+                }
+            });
+            
+        }
+    });
+})
+</script>
+<!-- 模板 -->
+<script type="text/html" id="operation">
+  <a class="layui-btn layui-btn-success layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+ 

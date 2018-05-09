@@ -1,0 +1,41 @@
+<ul id='role' class='ul'>
+    
+</ul>
+<button class='layui-btn layui-btn-sm save'>保存</button>
+<script type="text/javascript">
+var ids=0, str='';
+jQuery(document).ready(function($) {
+    var load = layer.load(1);
+    $.get('/api/role_list', function(data) {
+        // console.log(data);
+        layer.close(load);
+        $.each(data.data,function(index, el) {
+           str+= "<li><input  type='radio' name='role' value='"+el.id+"'/>  " + el.name + " </li>"
+        });
+        $('#role').html(str);
+    });
+    $('.save').click(function () {
+        var role_id=0
+        $('input[name="role"]').each(function(index, el) {
+            if($(this).prop('checked')==true){
+                role_id=$(this).val();
+            }
+        });
+        if (!role_id) { layer.msg('请选择角色'); return;}
+        var id = get_param('id');
+        var load1 = layer.load(1, {time: 1000*10});
+        // console.log(id,role_id);return ;
+        $.post('/api/update_user_role', {role_id:role_id, id:id}, function(data, textStatus, xhr) {
+            layer.close(load1);
+            if (data.code == 0) {
+                layer.msg('保存成功!');
+                parent.reload_table();
+            }else{
+                layer.msg(data.msg);
+            }
+            
+        });
+    })
+});
+</script>
+ 

@@ -1,0 +1,49 @@
+
+<form id='from1'  >
+	<div class='loginform'>
+		<div class="form-group">
+			<label for="username">用户名</label>
+			<input type="text" name='username' class="form-control" id="username" placeholder="Username">
+		</div>
+		<div class="form-group">
+			<label for="password">密码</label>
+			<input type="password" name='password' class="form-control" id="password" placeholder="Password">
+		</div>
+		<div class="form-group center">
+	  		<button type='submit' class="btn btn-primary ">登录</button>
+	  		<div class='nbsp'></div>
+	  		<button type='reset'  class="btn btn-default">重置</button>
+  		</div>
+	</div>
+</form>
+<script type="text/javascript">
+jQuery(document).ready(function($) { 
+	var w = $(window).width() * 0.3; 
+	var h = $(window).height() * 0.2;
+	$('.loginform').css('margin-left',w+'px');
+	$('.loginform').css('margin-top',h+'px');
+ 	$("#from1").validate({ 
+ 		submitHandler: function(form) { 
+ 			var _load=layer.load();
+ 			$.post('/api/signin', {username: form.username.value,password:form.password.value}, function(data, textStatus, xhr) {
+ 				//console.log(data);
+ 				layer.close(_load);
+ 				if (data.code==1) {
+ 					layer.msg(data.msg);
+ 				}else if(data.code==0){
+ 					window.location.href='/web/';
+ 				}
+ 			});
+ 		},
+ 		debug:false,
+ 		rules: { 
+ 			username: { required: true, minlength: 4 }, 
+ 			password: { required: true, minlength: 4 } 
+ 		},
+ 		messages: { 
+ 		 	username: { required: "请输入用户名" ,minlength: "用户名至少4个字符"},
+ 		 	password: { required: "请输入密码", minlength: "密码长度不能小于4个字符" }
+ 		}
+ 	});
+});
+</script>

@@ -1,0 +1,35 @@
+.loginform {
+    text-align: left;
+    width: 400px;
+    border: 1px #ccc solid;
+    padding: 20px;
+
+}
+.center{
+	text-align: center;
+}
+ 
+.nbsp{
+	display: inline-block;
+	width: 10px;
+}
+.error{
+	color: red;
+}
+.input{
+    width:220px;line-height: 25px
+}
+.tr_min{
+	height: 33px;
+}
+.table_min{
+	text-align: left;
+	margin-top: 10px;
+	width: 100%;
+	border: 0px;
+}
+.ul{
+	line-height: 25px;
+}
+ 
+

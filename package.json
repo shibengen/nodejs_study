@@ -1,0 +1,32 @@
+{
+  "name": "nodejs study",
+  "version": "1.0.0",
+  "description": "学习",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nodejs",
+    "express"
+  ],
+  "author": "shibengen",
+  "license": "ISC",
+  "dependencies": {
+    "config-lite": "^2.1.0",
+    "connect-flash": "^0.1.1",
+    "cookie-parser": "^1.4.3",
+    "crypt": "^0.0.2",
+    "ejs": "^2.5.7",
+    "express": "^4.14.0",
+    "express-formidable": "^1.0.0",
+    "express-session": "^1.15.6",
+    "jade": "^1.11.0",
+    "mysql": "^2.0.0-alpha8",
+    "path": "^0.12.7",
+    "pug": "^2.0.0-rc.4",
+    "session": "^0.1.0",
+    "socket.io": "^2.0.4",
+    "strftime": "^0.10.0"
+  }
+}

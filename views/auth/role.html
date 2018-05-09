@@ -1,0 +1,155 @@
+
+<div>
+  <a href='javascript:;' class="layui-btn layui-btn-normal add_role">添加角色</a>
+</div>
+<table id="rolelist" lay-filter="rolelist"></table>
+ 
+<script type="text/javascript">
+var table=null;//全局table变量
+var list_url='/api/role_list';
+jQuery(document).ready(function($) {
+  layui.use('table', function(){
+        table = layui.table, form = layui.form;
+        table.render({
+			elem: '#rolelist'
+			,width:800
+			,height: 450
+			,url: '/api/role_list' //数据接口
+			,page: false //开启分页
+			,cols: [[ //表头
+				{field: 'id', title: 'ID', width:80, sort: true, fixed: 'left'}
+				,{field: 'name', title: '名称', width:120}
+				,{field: 'auth', title: '权限', width:300} 
+				,{field: 'wealth', title: '操作',toolbar:'#operation', width: 200}
+			]]
+        });
+        //监听工具条
+      	table.on('tool(rolelist)', function(obj){
+			var data = obj.data;
+			if(obj.event === 'del'){
+			  layer.confirm('真的删除行么', function(index){
+			    var load=layer.load(1,{time:1000*20});
+			    $.ajax({
+			        url:'/api/role/'+data.id,
+			        type: 'delete',
+			        dataType: 'json',
+			        data: {},
+			        success: function(data, textStatus, xhr) {
+			            // console.log(result);
+			            layer.close(load);
+			            if (data.code == 0) {
+			              layer.msg('删除成功');
+			              obj.del();
+			            }else{
+			              layer.msg('删除失败');
+			            }
+			        },
+			        error: function(res, txt, err) {}
+			    });
+			    layer.close(index);
+			  });
+			} else if(obj.event === 'edit'){
+			  	var layer_area = ['400px', '210px'];
+			    var _div = "<table class='table_min' ><tr class='tr_min'><td align='right' >";
+			    _div+= "名称 : &nbsp;</td><td><input type='text' name='name'  class='name input' value='"+data.name+"'' ></table>";
+			    layer.open({
+			        type: 1,
+			        title: '编辑角色名',
+			        content: _div,
+			        area: layer_area,
+			        btn: ['确定', '取消'],
+			        yes: function(index, elem) {
+			            var name = $('.name').val();
+			           
+			            if (!name   ) {
+			                layer.msg('请输入数据!');return ;
+			            }
+			            if (name.length<1) {
+			                layer.msg('名称最少1个字符!');
+			                return;
+			            }
+			            $.post('/api/update_role', { name: name, id: data.id }, function(data, textStatus, xhr) {
+			                if (data.code == 0) {
+			                    layer.msg('更新成功');
+			                   	obj.update({
+								    name: name
+							    });
+								layer.close(index);
+			                } else {
+			                    layer.msg(data.msg);
+			                }
+			            }); 
+			        }
+			    });
+			}else if(obj.event=='auth'){				
+				var layer_area = get_area(0.8, 0.8);
+				var url ='/web/auth/route_no_layout/?id='+data.id
+			    layer.open({
+			        type: 2,
+			        title: '编辑角色权限',
+			        content: url,
+			        area: layer_area,
+			        btn: ['关闭窗口'],
+			        yes: function(index, elem) {
+			            layer.close(index);
+			        }
+			    });
+			}
+        });
+  });
+});
+//===============================event================================
+
+$('.add_role').click(function () {
+	var layer_area = ['400px', '160px'];
+    var _div = "<table class='table_min' ><tr class='tr_min'><td align='right' >";
+    _div+= "名称 : &nbsp;</td><td><input type='text' name='name'  class='name input' ></td></tr>";
+    _div += "</table>";
+    layer.open({
+        type: 1,
+        title: '添加角色',
+        content: _div,
+        area: layer_area,
+        btn: ['确定', '取消'],
+        yes: function(index, elem) {
+            var name = $('.name').val();
+            if (!name ) {
+                layer.msg('请输入名称!');return ;
+            }
+            if (name.length<1) {
+                layer.msg('名称最少1个字符!');
+                return;
+            }
+            $.post('/api/add_role', { name: name}, function(data, textStatus, xhr) {
+                if (data.code == 0) {
+                    layer.msg('添加成功');
+                    table.reload('rolelist', {
+						  url: list_url
+						  // ,where: {} //设定异步数据接口的额外参数
+						  //,height: 300
+						});
+					layer.close(index);
+                } else {
+                    layer.msg(data.msg);
+                }
+            });
+        }
+    });
+})
+function reload_table() {
+	table.reload('rolelist', {
+	  url: list_url
+	  // ,where: {} //设定异步数据接口的额外参数
+	  //,height: 300
+	});
+	layer.closeAll();
+}
+</script>
+<!-- 模板 -->
+<script type="text/html" id="operation">
+  <a class="layui-btn layui-btn-success layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-success layui-btn-xs" lay-event="auth">设定权限</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+ 

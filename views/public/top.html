@@ -1,0 +1,70 @@
+<ul class="layui-nav layui-layout-left">
+      <!-- <li class="layui-nav-item"><a href="/web">控制台首页</a></li> -->
+</ul>
+<ul class="layui-nav layui-layout-right">
+  <li class="layui-nav-item">
+    <a href="javascript:;">
+      <%=session.user.name%>
+    </a>
+    <dl class="layui-nav-child">
+     <!-- <dd><a href="/web/user/?id=<%=session.user.id%>">基本资料</a></dd> -->
+      <dd><a href="javascript:;" class='edit_password'>修改密码</a></dd>
+    </dl>
+  </li>
+  <li class="layui-nav-item"><a href="/web/logout">退出</a></li>
+</ul>
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    var my_user_id = "<%=session.user.id%>";
+    $('.edit_password').click(function(event) {
+        var layer_area = ['400px', '210px'];
+        var _div = "<table class='table_min' ><tr class='tr_min'><td align='right' >";
+        _div+= "旧&nbsp;密&nbsp;码 : &nbsp;</td><td><input type='password' name='old_password'  class='old_password input' ></td></tr>";
+        _div += "<t class='tr_min'><td align='right'>";
+        _div += "新&nbsp;密&nbsp;码 : &nbsp;</td><td> <input type='password' name='new_password'   class='new_password input'></td></tr>";
+        _div += "<tr  class='tr_min'><td align='right'>";
+        _div += "确认密码 : &nbsp;</td><td><input type='password' name='new_password2'  class='new_password2 input'></td></tr></table>";
+        layer.open({
+            type: 1,
+            title: '修改密码',
+            content: _div,
+            area: layer_area,
+            btn: ['确定', '取消'],
+            yes: function(index, elem) {
+                var old_password = $('.old_password').val();
+                var new_password = $('.new_password').val();
+                var new_password2 = $('.new_password2').val();
+                if (!old_password || !new_password || !new_password2) {
+                    layer.msg('请输入数据!');return ;
+                }
+                if (old_password.length<4) {
+                    layer.msg('旧密码最少4个字符!');
+                    return;
+                }
+                if (new_password.length<4) {
+                    layer.msg('新密码最少4个字符!');
+                    return;
+                }
+                if (new_password != new_password2) {
+                    layer.msg('两次新密码不相同,请重新输入!');
+                    return;
+                }
+                if (old_password==new_password) {
+                    layer.msg('旧密码不能与新密码相同!');return;
+                }
+                $.post('/api/update_my_password', { password: new_password, old_password: old_password, id: my_user_id }, function(data, textStatus, xhr) {
+                    //console.log(data)
+                    if (data.code == 0) {
+                        layer.msg('修改成功');
+                        layer.close(index);
+                    } else {
+                        layer.msg(data.msg);
+                    }
+                });
+                
+            }
+        });
+
+    });
+});
+</script>

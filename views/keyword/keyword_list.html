@@ -1,0 +1,146 @@
+
+<div>
+  <a href='/web/user/add_user' class="layui-btn layui-btn-normal add-user">添加用户</a>
+  <label>锁定状态的用户将不能登录</label>
+</div>
+<table id="userlist" lay-filter="userlist"></table>
+ 
+<script>
+var table=null;
+jQuery(document).ready(function($) {
+  layui.use('table', function(){
+        var form = layui.form;
+        table = layui.table;
+        table.render({
+           elem: '#userlist'
+          ,width:900
+          ,height: 450
+          ,url: '/api/userlist' //数据接口
+          ,page: true //开启分页
+          ,cols: [[ //表头
+            {field: 'id', title: 'ID', width:40, sort: true, fixed: 'left'}
+            ,{field: 'username', title: '用户名', width:100}
+            ,{field: 'role_name', title: '角色', width:100, templet:"#role_tpl"}
+            ,{field: 'login_count', title: '登录次数', width:100} 
+            ,{field: 'last_login_time', title: '最后登录时间', width: 150}
+            ,{field: 'login_lock', title: '账号锁定', width:100, templet: '#checkboxTpl', unresize: true  }
+            ,{field: 'wealth', title: '操作',toolbar:'#operation', width: 210}
+          ]]
+        });
+          //监听工具条
+      table.on('tool(userlist)', function(obj){
+          var data = obj.data;
+          if(obj.event === 'del'){
+              layer.confirm('真的删除行么', function(index){
+                if (data.id==1) {
+                   layer.msg('超级管理员账号不能删除!');
+                   return;
+                }
+                var load=layer.load(1,{time:1000*20});
+                $.ajax({
+                    url:'/api/user/'+data.id,
+                    type: 'delete',
+                    dataType: 'json',
+                    data: {},
+                    success: function(data, textStatus, xhr) {
+                        // console.log(result);
+                        layer.close(load);
+                        if (data.code==0) {
+                          layer.msg('删除成功');
+                          obj.del();
+                        }else{
+                          layer.msg('删除失败');
+                        }
+                    },
+                    error: function(res, txt, err) {}
+                });
+                layer.close(index);
+              });
+          } else if(obj.event === 'edit'){
+              // layer.alert('编辑行：<br>'+ JSON.stringify(data))
+                layer.prompt({
+                  formType: 0
+                  ,title: '修改  ['+ data.username +'] 的密码'
+                  ,value: ''
+                },
+                function(value, index){
+                    layer.close(index);
+                    if (value.length<4) {
+                        layer.msg('密码最少4个字符!');
+                        return false;
+                    }
+                    $.post('/api/update_password', {password:value, id:data.id}, function(data, textStatus, xhr) {
+                      //console.log(data)
+                      if (data.code==0) {
+                          layer.msg('修改成功');
+                      }else{
+                          layer.msg('修改失败');
+                      }
+                    });
+                    //这里一般是发送修改的Ajax请求
+                });
+          }else if (obj.event==='auth') {
+            //角色选择
+        	var layer_area = get_area(0.5, 0.8);
+			var url ='/web/auth/role_no_layout/?id='+obj.data.id;
+		    layer.open({
+		        type: 2,
+		        title: '选用角色',
+		        content: url,
+		        area: layer_area,
+		        btn: ['关闭窗口'],
+		        yes: function(index, elem) {
+		            layer.close(index);
+		        }
+		    }); 
+          }
+      });
+    //监听锁定操作
+    form.on('checkbox(login-lock)', function(obj){
+        if (this.value==1) {
+          layer.msg('该操作对超级管理员无效!');
+          $(this).next('div').removeClass('layui-form-checked');
+          return 
+        }
+        var login_lock = obj.elem.checked ? 1 : 0;
+        $.post('/api/user_lock/', {login_lock: login_lock,id:this.value}, function(data, textStatus, xhr) {
+            if (!data.code) {
+              layer.tips('操作成功',obj.othis);
+            }else{
+              layer.tips('操作失败',obj.othis);
+            }
+        });
+    });
+        
+  });
+});
+//重新加载列表
+function reload_table() {
+	table.reload('userlist', {
+	  url: '/api/userlist'
+	  // ,where: {} //设定异步数据接口的额外参数
+	  //,height: 300
+	});
+	layer.closeAll();
+}
+</script>
+<!-- 模板 -->
+<script type="text/html" id="operation">
+  <!-- <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">查看</a> -->
+  <a class="layui-btn layui-btn-xs" lay-event="edit">修改密码</a>
+  <a class="layui-btn layui-btn-xs" lay-event="auth">编辑权限</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script type="text/html" id="checkboxTpl">
+  <input type="checkbox" name="lock" value="{{d.id}}" title="锁定" lay-filter="login-lock"  {{ d.login_lock  ? 'checked' : '' }}>
+</script>
+<script type="text/html" id="role_tpl">
+  {{#  if(d.id == 1){ }}
+   	超级管理员
+  {{#  } else if(!d.role_name){ }}
+    <span style='color: #ccc'>未授权</span>
+  {{#  }else{ }}
+ 	 {{ d.role_name }}
+  {{#  } }}
+</script>

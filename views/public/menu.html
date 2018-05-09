@@ -1,0 +1,44 @@
+ <ul class="layui-nav layui-nav-tree"  lay-filter="menu">
+   <%
+   menu = session.menu;
+   if(menu){
+   for(var i=0 ; i< menu.length ; i++){
+   %>
+    <li class="layui-nav-item layui-nav-itemed">
+      <a class="" href="javascript:;"><%=menu[i].name%></a>
+      <dl class="layui-nav-child">
+        <% 
+        var sub_menu = menu[i]['sub'];
+        for(var j=0 ; j < sub_menu.length; j++) { %>
+        <dd><a href="/web/<%=sub_menu[j]['url']%>"><%= sub_menu[j]['name']%></a></dd>
+        <% } %>
+      </dl>
+    </li>
+    <% }
+    } %>
+    <% if (session.user.id==1) { %>
+    <!-- 这块固定只给超级管理员使用 -->
+    <li class="layui-nav-item layui-nav-itemed">
+      <a href="javascript:;">权限控制</a>
+      <dl class="layui-nav-child">
+        <dd><a href="/web/auth/route">路由列表</a></dd>
+        <dd><a href="/web/auth/role">角色列表</a></dd>
+        <dd><a href="/web/auth/menu">菜单列表</a></dd>
+      </dl>
+    </li>
+    <% } %>
+</ul>
+<script type="text/javascript">
+	jQuery(document).ready(function($) {
+		var _params=location.pathname;
+		// console.log(_params);
+		$('.layui-nav-tree a').each(function(index, el) {
+			var url = $(el).attr('href');
+			if (_params == url) {
+				$(el).parent('dd').addClass('layui-this');
+			}
+		});
+	});
+
+
+</script>

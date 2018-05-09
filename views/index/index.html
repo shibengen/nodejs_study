@@ -1,0 +1,10 @@
+<div id='time'></div>
+<script type="text/javascript">
+setTimeout(get_time,500);
+function get_time() {
+	var _date=  new Date();
+	var time = _date.getFullYear()+'-'+(_date.getMonth()+1)+'-'+_date.getDate()+' '+_date.getHours()+':'+_date.getMinutes()+':'+_date.getSeconds();
+	$('#time').html(time);
+	setTimeout(get_time,1000);
+}
+</script>
